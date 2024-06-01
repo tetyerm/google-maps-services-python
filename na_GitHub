@@ -1,0 +1,177 @@
+CREATE OR REPLACE TABLE "MOJE_CLEAN_DATA_PRIJEZDY" AS
+( 
+SELECT  
+    TO_DATE("Call_Year", 'YYYY') AS "Call_Year",
+    "Project_Code",
+    "Sektor",
+    TO_DATE("ROK",'YYYY') AS "ROK",
+    "Action_Code_Name",
+    "Mobility_Code",
+    CASE 
+        WHEN ("Participant_Gender_Name" = '-' OR "Participant_Gender_Name" = 'Undefined') THEN NULL
+        ELSE "Participant_Gender_Name"
+    END as "Participant_Gender_Name",
+    CASE 
+        WHEN "Participant_Age" = '-' OR "Participant_Age" = '' THEN NULL
+        WHEN CAST("Participant_Age" AS INT) < 5 OR CAST("Participant_Age" AS INT) > 100 THEN NULL
+        ELSE CAST("Participant_Age" AS INT)
+    END as "Participant_Age",
+    CASE
+        WHEN "Participant_Nationality_Code_Name" = '-' THEN NULL
+        ELSE "Participant_Nationality_Code_Name"
+    END as "Participant_Nationality_Code_Name",
+    TO_BOOLEAN ("Mobility_Participant_Is_National_Participant_Y_N") as "Mobility_Participant_Is_National_Participant_Y_N",
+    CASE	
+        WHEN "Participant_Education_Field_Code_Name" = '-' THEN NULL
+        ELSE "Participant_Education_Field_Code_Name"
+    END AS "Participant_Education_Field_Code_Name",
+    CASE
+        WHEN "Participant_Education_Level_Code_Name" = '-' THEN NULL
+        ELSE "Participant_Education_Level_Code_Name"
+    END AS "Participant_Education_Level_Code_Name",
+    "Mobility_Country_Activity",
+    CASE
+        WHEN "Mobility_Sending_Organisation_Name" = '-' THEN NULL
+        ELSE "Mobility_Sending_Organisation_Name"
+    END AS "Mobility_Sending_Organisation_Name",
+    CASE
+        WHEN "Mobility_Sending_Organisation_OID" = '-' THEN NULL
+        ELSE "Mobility_Sending_Organisation_OID"
+    END AS "Mobility_Sending_Organisation_OID",
+    "Mobility_Sending_City",
+    "Mobility_Sending_Country_Code_Name",
+    SUBSTR ("Mobility_Sending_Country_Code_Name", 0 , 2) AS "Mobility_Sending_Country_Code",
+    CASE
+        WHEN "Mobility_Sending_NUTS2_Code" = '-' THEN NULL
+        ELSE "Mobility_Sending_NUTS2_Code"
+    END AS "Mobility_Sending_NUTS2_Code",
+    CASE
+        WHEN "Mobility_Sending_NUTS2_Name" = '-' THEN NULL
+        ELSE "Mobility_Sending_NUTS2_Name" 
+    END AS "Mobility_Sending_NUTS2_Name" , 
+    "Mobility_Receiving_Organisation_Name",
+    CASE
+        WHEN "Mobility_Receiving_City" = '-' THEN NULL
+        ELSE "Mobility_Receiving_City"
+    END AS "Mobility_Receiving_City",
+    CASE
+        WHEN "Mobility_Receiving_NUTS2_Name" = '-' THEN NULL
+        ELSE "Mobility_Receiving_NUTS2_Name"
+    END AS "Mobility_Receiving_NUTS2_Name", 
+    SUBSTR ("Mobility_Receiving_NUTS2_Name", 0 , 4) AS "Mobility_Receiving_Country_NUTS2",
+    CASE
+        WHEN "Mobility_Distance_Band_Code_Name" = '-' THEN NULL
+        ELSE "Mobility_Distance_Band_Code_Name" 
+    END AS "Mobility_Distance_Band_Code_Name",
+    IFF("Mobility_Distance_Band_Code_Name" IS NOT NULL, SUBSTR ("Mobility_Distance_Band_Code_Name", 11), NULL) AS "Mobility_Distance_Band",
+    "Preklad_mobilit",
+    CASE
+        WHEN "Mobility_Activity_Participant_Profile" = 'Unassigned' THEN NULL
+        ELSE "Mobility_Activity_Participant_Profile"
+    END AS "Mobility_Activity_Participant_Profile",
+    "Mobility_Academic_Year",
+    TO_DATE("Mobility_Start_Date", 'DD.MM.YYYY HH24:MI') AS "Mobility_Start_Date",
+    TO_DATE("Mobility_End_Date", 'DD.MM.YYYY HH24:MI') AS "Mobility_End_Date",
+    TO_BOOLEAN("Mobility_Is_Green_Transportation") AS "Mobility_Is_Green_Transportation",
+    CASE
+        WHEN "Is_BIP_Mobility_Y_N" = '-' THEN NULL
+        ELSE TO_BOOLEAN("Is_BIP_Mobility_Y_N") 
+    END AS "Is_BIP_Mobility_Y_N" ,
+    TO_BOOLEAN("Mobility_Is_Blended_YN") AS "Mobility_Is_Blended_YN",
+    CAST("Number_of_Mobilities" AS INT) AS "Number_of_Mobilities",
+    CAST(LEFT("Average_Mobility_Duration_Days", LEN("Average_Mobility_Duration_Days") -3) AS INT) AS "Average_Mobility_Duration_Days",
+    CAST("Number_of_Travel_Days" AS INT) AS "Number_of_Travel_Days",
+    CAST("Number_of_Hours_of_Mobility_Virtual" AS INT) AS "Number_of_Hours_of_Mobility_Virtual",
+    CAST(REPLACE(REPLACE(REPLACE("Sum_of_Mobility_Total_Grant", ' ', ''), ',', '.'), '€', '') AS FLOAT) AS "Sum_of_Mobility_Total_Grant_EUR",
+    CAST("Number_of_Accompanying_Persons" AS INT) AS "Number_of_Accompanying_Persons",
+    CAST("Number_of_Fewer_Opportunities" AS INT) AS "Number_of_Fewer_Opportunities" 
+FROM "prijezdy"
+);
+
+CREATE OR REPLACE TEMPORARY TABLE Pomocna_NEW AS
+SELECT "Call_Year", "Project_Code", "Sektor", "ROK", "Key_Action_Code", "Action_Code_Name", "Mobility_Code", "Mobility_Status_Code", "Mobility_Participant_Is_National_Participant_Y_N", "Participant_Seniority_Code_Name", "Mobility_Country_Activity", "Mobility_Sending_Organisation_Name", "Mobility_Sending_Organisation_OID", "Mobility_Sending_City", "Mobility_Sending_Country_Code_Name", "Mobility_Receiving_Organisation_Name", "Mobility_Receiving_Organisation_OID", "Mobility_Receiving_Country_Code_Name", "Preklad_mobilit", "Mobility_Activity_Participant_Profile", "Mobility_Academic_Year",  "Mobility_Is_Outer_Most_Region_Yn", "Mobility_Is_Green_Transportation", "Mobility_Is_Inter_Rail_Pass", "Mobility_Digital_Skill_Name", "Mobility_Traineeship_in_Digital_Skills_DOT", "Is_BIP_Mobility_Y_N", "Mobility_Is_Blended_YN", "Number_of_Mobilities", "Average_Mobility_Duration_Days", "Number_of_Travel_Days", "Number_of_Hours_of_Mobility_Virtual", "Sum_of_Mobility_Total_Grant", "Number_of_Accompanying_Persons", "Number_of_Decision_Makers", "Number_of_Fewer_Opportunities", "Number_of_OLS_licenses"
+, IFF ("Participant_Gender_Name" = '-', NULL, "Participant_Gender_Name") AS "Participant_Gender_Name_Clean"
+, IFF ("Participant_Nationality_Code_Name" = '-', NULL, "Participant_Nationality_Code_Name") AS "Participant_Nationality_Code_Name_Clean"
+,IFF ("Participant_Education_Field_Code_Name" = '-', NULL, "Participant_Education_Field_Code_Name") AS "Participant_Education_Field_Code_Name_Clean"
+,IFF ("Participant_Education_Level_Code_Name" = '-', NULL, "Participant_Education_Level_Code_Name") AS "Participant_Education_Level_Code_Name_Clean"
+,IFF ("Mobility_Sending_NUTS2_Code" = '-', NULL, "Mobility_Sending_NUTS2_Code") AS "Mobility_Sending_NUTS2_Code_Clean"
+,IFF ("Mobility_Sending_NUTS2_Name" = '-', NULL, "Mobility_Sending_NUTS2_Name") AS "Mobility_Sending_NUTS2_Name_Clean"
+,IFF ("Mobility_Receiving_NUTS2_Code" = '-', NULL, "Mobility_Receiving_NUTS2_Code") AS "Mobility_Receiving_NUTS2_Code_Clean"
+,IFF ("Mobility_Receiving_NUTS2_Name" = '-', NULL, "Mobility_Receiving_NUTS2_Name") AS "Mobility_Receiving_NUTS2_Name_Clean"
+,IFF ("Mobility_Distance_Band_Code_Name" = '-', NULL, "Mobility_Distance_Band_Code_Name") AS "Mobility_Distance_Band_Code_Name_Clean"
+,IFF ("Mobility_Receiving_City" = 'XX', NULL, "Mobility_Receiving_City") AS "Mobility_Receiving_City_Clean"
+, IFF ("Mobility_Receiving_Organisation_OID" = '-', NULL, "Mobility_Receiving_Organisation_OID") AS "Mobility_Receiving_Organisation_OID_Clean"
+,IFF ( "Is_BIP_Mobility_Y_N"= '-', NULL, "Is_BIP_Mobility_Y_N") AS "Is_BIP_Mobility_Y_N_Clean"
+,to_date("Mobility_Start_Date",'DD.MM.YYYY HH24:MI') AS "Mobility_Start_Date_Clean"
+,to_date("Mobility_End_Date",'DD.MM.YYYY HH24:MI') AS "Mobility_End_Date_Clean"
+,TRY_TO_DECIMAL ("Participant_Age") AS "Participant_Age"
+,SUBSTR ("Mobility_Receiving_Country_Code_Name", 0 , 2) AS "Mobility_Receiving_Country_Code"
+FROM KEBOOLA_20039.WORKSPACE_72073352."vyjezdy"
+;
+
+UPDATE KEBOOLA_20039.WORKSPACE_72073352.POMOCNA_NEW
+SET "Sum_of_Mobility_Total_Grant" = replace("Sum_of_Mobility_Total_Grant", '€','');
+//AND REPLACE("Sum_of_Mobility_Total_Grant", ',','.');
+
+UPDATE KEBOOLA_20039.WORKSPACE_72073352.POMOCNA_NEW
+SET "Sum_of_Mobility_Total_Grant" = replace("Sum_of_Mobility_Total_Grant",  ',','.');
+
+UPDATE KEBOOLA_20039.WORKSPACE_72073352.POMOCNA_NEW
+SET "Average_Mobility_Duration_Days" = replace("Average_Mobility_Duration_Days", ',','.');
+
+UPDATE KEBOOLA_20039.WORKSPACE_72073352.POMOCNA_NEW
+SET "Sum_of_Mobility_Total_Grant" = replace("Sum_of_Mobility_Total_Grant", ' ','');
+
+UPDATE KEBOOLA_20039.WORKSPACE_72073352.POMOCNA_NEW
+SET "Participant_Age" = NULL
+WHERE "Participant_Age" <5 OR "Participant_Age" > 100
+;
+
+
+CREATE OR REPLACE TABLE CLEAN_DATA_VYJEZDY AS 
+SELECT "Call_Year" :: INT AS Call_Year
+    , "Project_Code"
+    , "Sektor"
+    , "ROK":: INT AS Rok
+    , "Action_Code_Name"
+    , "Mobility_Code"
+    , "Mobility_Status_Code"
+    , "Participant_Gender_Name_Clean" AS "Participant_Gender_Name"
+    , "Participant_Age"
+    , "Participant_Nationality_Code_Name_Clean" AS "Participant_Nationality_Code_Name"
+    , "Mobility_Participant_Is_National_Participant_Y_N"
+    , "Participant_Education_Field_Code_Name_Clean" AS "Participant_Education_Field_Code_Name"
+    , "Participant_Education_Level_Code_Name_Clean" AS "Participant_Education_Level_Code_Name"
+    , "Mobility_Country_Activity", "Mobility_Sending_Organisation_Name"
+    , "Mobility_Sending_Organisation_OID"
+    , "Mobility_Sending_City"
+    , "Mobility_Sending_Country_Code_Name"
+    , "Mobility_Sending_NUTS2_Code_Clean" AS "Mobility_Sending_NUTS2_Code"
+    , "Mobility_Sending_NUTS2_Name_Clean" AS "Mobility_Sending_NUTS2_Name"
+    , "Mobility_Receiving_Organisation_Name"
+    , "Mobility_Receiving_Organisation_OID_Clean" AS "Mobility_Receiving_Organisation_OID"
+    , "Mobility_Receiving_City_Clean" AS "Mobility_Receiving_City"
+    , "Mobility_Receiving_Country_Code_Name"
+    , "Mobility_Receiving_Country_Code"
+    , "Mobility_Receiving_NUTS2_Code_Clean" AS "Mobility_Receiving_NUTS2_Code"
+    , "Mobility_Receiving_NUTS2_Name_Clean" AS "Mobility_Receiving_NUTS2_Name"
+    , "Mobility_Distance_Band_Code_Name_Clean" AS "Mobility_Distance_Band_Code_Name"
+    , "Preklad_mobilit"
+    , "Mobility_Activity_Participant_Profile"
+    , "Mobility_Academic_Year"
+    , "Mobility_Start_Date_Clean" AS "Mobility_Start_Date" 
+    , "Mobility_End_Date_Clean" AS "Mobility_End_Date"
+    , "Mobility_Is_Green_Transportation" :: INT AS "Mobility_Is_Green_Transportation"
+    ,"Is_BIP_Mobility_Y_N_Clean" AS "Is_BIP_Mobility_Y_N"
+    , "Mobility_Is_Blended_YN" :: INT AS "Mobility_Is_Blended_YN" 
+    , "Number_of_Mobilities" :: INT AS "Number_of_Mobilities"
+    , "Average_Mobility_Duration_Days" :: FLOAT AS "Average_Mobility_Duration_Days"
+    , "Number_of_Travel_Days" :: INT AS "Number_of_Travel_Days"
+    , "Number_of_Hours_of_Mobility_Virtual" :: INT AS "Number_of_Hours_of_Mobility_Virtual"
+    ,replace("Sum_of_Mobility_Total_Grant", ' ',''):: FLOAT AS "Sum_of_Mobility_Total_Grant_EUR"
+    , "Number_of_Accompanying_Persons" :: INT AS "Number_of_Accompanying_Persons"
+    , "Number_of_Fewer_Opportunities" :: INT AS "Number_of_Fewer_Opportunities"
+FROM KEBOOLA_20039.WORKSPACE_72073352.POMOCNA_NEW
+;
+
+
